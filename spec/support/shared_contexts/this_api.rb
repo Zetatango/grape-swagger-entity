@@ -3,7 +3,7 @@ shared_context 'this api' do
     module ThisApi
       module Entities
         class Kind < Grape::Entity
-          expose :title, documentation: { type: 'string', desc: 'Title of the kind.' }
+          expose :title, documentation: { type: 'string', desc: 'Title of the kind.', documentation: { example: 'Stuff'} }
         end
 
         class Relation < Grape::Entity
