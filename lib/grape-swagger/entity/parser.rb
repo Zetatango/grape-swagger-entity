@@ -55,6 +55,7 @@ module GrapeSwagger
           if documentation
             memo[entity_name][:read_only] = documentation[:read_only].to_s == 'true' if documentation[:read_only]
             memo[entity_name][:description] = documentation[:desc] if documentation[:desc]
+            memo[entity_name].merge!(documentation[:documentation]) if documentation[:documentation]
           end
         end
       end
