@@ -48,7 +48,7 @@ describe 'responseModel' do
     expect(subject['definitions'].keys).to include 'Something'
     expect(subject['definitions']['Something']).to eq(
       'type' => 'object',
-      'description' => 'This returns something or an error',
+      'description' => 'This returns something',
       'properties' =>
           { 'text' => { 'type' => 'string', 'description' => 'Content of something.' },
             'colors' => { 'type' => 'array', 'items' => { 'type' => 'string' }, 'description' => 'Colors' },
@@ -56,7 +56,10 @@ describe 'responseModel' do
             'kind2' => { '$ref' => '#/definitions/Kind', 'description' => 'Secondary kind.' },
             'kind3' => { '$ref' => '#/definitions/Kind', 'description' => 'Tertiary kind.' },
             'tags' => { 'type' => 'array', 'items' => { '$ref' => '#/definitions/Tag' }, 'description' => 'Tags.' },
-            'relation' => { '$ref' => '#/definitions/Relation', 'description' => 'A related model.' } }
+            'relation' => { '$ref' => '#/definitions/Relation', 'description' => 'A related model.' },
+            'code' => { 'type' => 'string', 'description' => 'Error code' },
+            'message' => { 'type' => 'string', 'description' => 'Error message' },
+            'attr' => { 'type' => 'string', 'description' => 'Attribute' } }
     )
 
     expect(subject['definitions'].keys).to include 'Kind'
@@ -82,7 +85,8 @@ describe 'building definitions from given entities' do
       module Entities
         class Values < Grape::Entity
           expose :guid, documentation: { desc: 'Some values', values: %w[a b c], default: 'c' }
-          expose :uuid, documentation: { desc: 'customer uuid', type: String, format: 'own' }
+          expose :uuid, documentation: { desc: 'customer uuid', type: String, format: 'own',
+                                         example: 'e3008fba-d53d-4bcc-a6ae-adc56dff8020' }
         end
 
         class Kind < Grape::Entity
@@ -95,7 +99,8 @@ describe 'building definitions from given entities' do
           expose :name, documentation: { type: String, desc: 'Name' }
         end
         class Tag < Grape::Entity
-          expose :name, documentation: { type: 'string', desc: 'Name' }
+          expose :name, documentation: { type: 'string', desc: 'Name',
+                                         example: -> { 'random_tag' } }
         end
 
         class Nested < Grape::Entity
@@ -103,10 +108,18 @@ describe 'building definitions from given entities' do
             expose :some1, documentation: { type: 'String', desc: 'Nested some 1' }
             expose :some2, documentation: { type: 'String', desc: 'Nested some 2' }
           end
+          expose :nested_with_alias, as: :aliased do
+            expose :some1, documentation: { type: 'String', desc: 'Alias some 1' }
+          end
           expose :deep_nested, documentation: { type: 'Object', desc: 'Deep nested entity' } do
             expose :level_1, documentation: { type: 'Object', desc: 'More deepest nested entity' } do
               expose :level_2, documentation: { type: 'String', desc: 'Level 2' }
             end
+          end
+          expose :nested_required do
+            expose :some1, documentation: { required: true, desc: 'Required some 1' }
+            expose :attr, as: :some2, documentation: { required: true, desc: 'Required some 2' }
+            expose :some3, documentation: { desc: 'Optional some 3' }
           end
 
           expose :nested_array, documentation: { type: 'Array', desc: 'Nested array' } do
@@ -124,6 +137,7 @@ describe 'building definitions from given entities' do
           expose :relation, using: TheseApi::Entities::Relation, documentation: { type: 'TheseApi::Relation', desc: 'A related model.' }
           expose :values, using: TheseApi::Entities::Values, documentation: { desc: 'Tertiary kind.' }
           expose :nested, using: TheseApi::Entities::Nested, documentation: { desc: 'Nested object.' }
+          expose :merged_attribute, using: ThisApi::Entities::Nested, merge: true
         end
       end
 
@@ -156,19 +170,19 @@ describe 'building definitions from given entities' do
       'type' => 'object',
       'properties' => {
         'guid' => { 'type' => 'string', 'enum' => %w[a b c], 'default' => 'c', 'description' => 'Some values' },
-        'uuid' => { 'type' => 'string', 'format' => 'own', 'description' => 'customer uuid' }
+        'uuid' => { 'type' => 'string', 'format' => 'own', 'description' => 'customer uuid', 'example' => 'e3008fba-d53d-4bcc-a6ae-adc56dff8020' }
       }
     )
     expect(subject['Kind']).to eql(
       'type' => 'object',
       'properties' => {
-        'id' => { 'type' => 'integer', 'format' => 'int32', 'description' => 'id of the kind.', 'enum' => [1, 2], 'read_only' => true },
-        'title' => { 'type' => 'string', 'description' => 'Title of the kind.', 'read_only' => false },
-        'type' => { 'type' => 'string', 'description' => 'Type of the kind.', 'read_only' => true }
+        'id' => { 'type' => 'integer', 'format' => 'int32', 'description' => 'id of the kind.', 'enum' => [1, 2], 'readOnly' => true },
+        'title' => { 'type' => 'string', 'description' => 'Title of the kind.', 'readOnly' => false },
+        'type' => { 'type' => 'string', 'description' => 'Type of the kind.', 'readOnly' => true }
       }
     )
     expect(subject['Tag']).to eql(
-      'type' => 'object', 'properties' => { 'name' => { 'type' => 'string', 'description' => 'Name' } }
+      'type' => 'object', 'properties' => { 'name' => { 'type' => 'string', 'description' => 'Name', 'example' => 'random_tag' } }
     )
     expect(subject['Relation']).to eql(
       'type' => 'object', 'properties' => { 'name' => { 'type' => 'string', 'description' => 'Name' } }
@@ -183,6 +197,12 @@ describe 'building definitions from given entities' do
           },
           'description' => 'Nested entity'
         },
+        'aliased' => {
+          'type' => 'object',
+          'properties' => {
+            'some1' => { 'type' => 'string', 'description' => 'Alias some 1' }
+          }
+        },
         'deep_nested' => {
           'type' => 'object',
           'properties' => {
@@ -195,6 +215,15 @@ describe 'building definitions from given entities' do
             }
           },
           'description' => 'Deep nested entity'
+        },
+        'nested_required' => {
+          'type' => 'object',
+          'properties' => {
+            'some1' => { 'type' => 'string', 'description' => 'Required some 1' },
+            'some2' => { 'type' => 'string', 'description' => 'Required some 2' },
+            'some3' => { 'type' => 'string', 'description' => 'Optional some 3' }
+          },
+          'required' => %w[some1 some2]
         },
         'nested_array' => {
           'type' => 'array',
@@ -221,7 +250,10 @@ describe 'building definitions from given entities' do
         'tags' => { 'type' => 'array', 'items' => { '$ref' => '#/definitions/Tag' }, 'description' => 'Tags.' },
         'relation' => { '$ref' => '#/definitions/Relation', 'description' => 'A related model.' },
         'values' => { '$ref' => '#/definitions/Values', 'description' => 'Tertiary kind.' },
-        'nested' => { '$ref' => '#/definitions/Nested', 'description' => 'Nested object.' }
+        'nested' => { '$ref' => '#/definitions/Nested', 'description' => 'Nested object.' },
+        'code' => { 'type' => 'string', 'description' => 'Error code' },
+        'message' => { 'type' => 'string', 'description' => 'Error message' },
+        'attr' => { 'type' => 'string', 'description' => 'Attribute' }
       },
       'description' => 'This returns something'
     )

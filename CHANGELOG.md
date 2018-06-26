@@ -8,6 +8,31 @@
 
 * Your contribution here.
 
+### 0.2.5 (April 26, 2018)
+
+#### Features
+
+* [#33](https://github.com/ruby-grape/grape-swagger-entity/pull/33): Update parser to respect merge option for entities - [@b-boogaard](https://github.com/b-boogaard).
+
+### 0.2.4 (April 3, 2018)
+
+#### Fixes
+
+* [#32](https://github.com/ruby-grape/grape-swagger-entity/pull/32): Fix issue with read_only fields - [@mcfilib](https://github.com/mcfilib).
+
+### 0.2.3 (November 19, 2017)
+
+#### Fixes
+
+* [#30](https://github.com/ruby-grape/grape-swagger-entity/pull/30): Fix nested exposures with an alias - [@Kukunin](https://github.com/Kukunin).
+* [#31](https://github.com/ruby-grape/grape-swagger-entity/pull/31): Respect `required: true` for nested attributes as well - [@Kukunin](https://github.com/Kukunin).
+
+### 0.2.2 (November 3, 2017)
+
+#### Features
+
+* [#27](https://github.com/ruby-grape/grape-swagger-entity/pull/27): Add support for attribute examples - [@Kukunin](https://github.com/Kukunin).
+
 ### 0.2.1 (Jule 5, 2017)
 
 #### Features
