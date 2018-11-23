@@ -45,7 +45,8 @@ module GrapeSwagger
                                       attribute_parser.call(entity_options)
                                     end
 
-        next unless documentation
+          next unless documentation
+
           memo[final_entity_name][:readOnly] = documentation[:read_only].to_s == 'true' if documentation[:read_only]
           memo[final_entity_name][:description] = documentation[:desc] if documentation[:desc]
           memo[final_entity_name].merge!(documentation[:documentation]) if documentation[:documentation]
@@ -93,6 +94,7 @@ module GrapeSwagger
 
       def with_required(hash, required)
         return hash if required.empty?
+
         hash[:required] = required
         hash
       end
