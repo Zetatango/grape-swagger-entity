@@ -8,6 +8,24 @@
 
 * Your contribution here.
 
+### 0.3.2 (January 15, 2019)
+
+#### Features
+
+* [#38](https://github.com/ruby-grape/grape-swagger-entity/pull/38): Added support for hidden option for documentation - [@vitoravelino](https://github.com/vitoravelino).
+
+### 0.3.1 (November 26, 2018)
+
+#### Features
+
+* [#37](https://github.com/ruby-grape/grape-swagger-entity/pull/37): Add support for minItems, maxItems and uniqueItems - [@fotos](https://github.com/fotos).
+
+### 0.3.0 (August 22, 2018)
+
+#### Features
+
+* [#35](https://github.com/ruby-grape/grape-swagger-entity/pull/35): Support for required attributes - [@Bugagazavr](https://github.com/Bugagazavr).
+
 ### 0.2.5 (April 26, 2018)
 
 #### Features

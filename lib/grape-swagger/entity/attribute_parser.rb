@@ -13,7 +13,13 @@ module GrapeSwagger
 
         if entity_model
           name = endpoint.nil? ? entity_model.to_s.demodulize : endpoint.send(:expose_params_from_model, entity_model)
-          return entity_model_type(name, entity_options)
+
+          entity_model_type = entity_model_type(name, entity_options)
+          return entity_model_type unless documentation
+
+          add_array_documentation(entity_model_type, documentation) if documentation[:is_array]
+
+          entity_model_type
         else
           param = data_type_from(entity_options)
           return param unless documentation
@@ -25,7 +31,11 @@ module GrapeSwagger
             param[:enum] = values if values.is_a?(Array)
           end
 
-          param = { type: :array, items: param } if documentation[:is_array]
+          if documentation[:is_array]
+            param = { type: :array, items: param }
+            add_array_documentation(param, documentation)
+          end
+
           param
         end
       end
@@ -42,6 +52,7 @@ module GrapeSwagger
 
       def could_it_be_a_model?(value)
         return false if value.nil?
+
         direct_model_type?(value[:type]) || ambiguous_model_type?(value[:type])
       end
 
@@ -94,7 +105,14 @@ module GrapeSwagger
 
       def add_attribute_example(attribute, example)
         return unless example
+
         attribute[:example] = example.is_a?(Proc) ? example.call : example
+      end
+
+      def add_array_documentation(param, documentation)
+        param[:minItems] = documentation[:min_items] if documentation.key?(:min_items)
+        param[:maxItems] = documentation[:max_items] if documentation.key?(:max_items)
+        param[:uniqueItems] = documentation[:unique_items] if documentation.key?(:unique_items)
       end
     end
   end
